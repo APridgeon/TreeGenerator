@@ -8,7 +8,7 @@ export default class DevScene extends Phaser.Scene {
     }
 
     preload(){
-        this.load.spritesheet('trees','assets/plants/proceduralTrees.png', {frameWidth: 16, frameHeight: 16});
+        this.load.spritesheet('trees','proceduralTrees.png', {frameWidth: 16, frameHeight: 16});
     }
 
     create(){

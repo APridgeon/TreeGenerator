@@ -1,5 +1,6 @@
 import * as Phaser from "phaser";
 import DevScene from "./development/devScene";
+import PixelatedFX from "./development/pixelatedFX";
 
 
 let phaserConfig: Phaser.Types.Core.GameConfig = {
@@ -9,8 +10,11 @@ let phaserConfig: Phaser.Types.Core.GameConfig = {
         autoCenter: Phaser.Scale.CENTER_BOTH
     },
     parent: "game",
-    backgroundColor: "#ff8888",
-    scene: [DevScene]
+    backgroundColor: "#ffaaaa",
+    scene: [DevScene],
+    pixelArt: true,
+    // @ts-ignore
+    pipeline: {'PixelatedFX': PixelatedFX},
 }
 
 new Phaser.Game(phaserConfig);
