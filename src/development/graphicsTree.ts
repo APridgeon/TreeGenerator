@@ -2,6 +2,11 @@ import PixelatedFX from "./pixelatedFX";
 import * as Phaser from 'phaser';
 import TreeComponents from "./treeTiles";
 
+type Position = {
+    x: number,
+    y: number
+}
+
 export default class GraphicsTree {
 
     _scene: Phaser.Scene;

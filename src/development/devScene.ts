@@ -1,5 +1,4 @@
 import * as Phaser from 'phaser';
-import ProceduralTree from './proceduralTree';
 import GraphicsTree from './graphicsTree';
 
 export default class DevScene extends Phaser.Scene {
@@ -14,10 +13,7 @@ export default class DevScene extends Phaser.Scene {
 
     create(){
 
-        this.add.rectangle(0, 0, 100, 100, 0x0000ff);
-
-        // new GraphicsTree(this);
-        // new ProceduralTree(this);
+        new GraphicsTree(this);
 
     }
 

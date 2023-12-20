@@ -4,8 +4,8 @@ import DevScene from "./development/devScene";
 
 let phaserConfig: Phaser.Types.Core.GameConfig = {
     scale: {
-        width: 400,
-        height: 300,
+        width: 800,
+        height: 600,
         autoCenter: Phaser.Scale.CENTER_BOTH
     },
     parent: "game",
