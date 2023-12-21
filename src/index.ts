@@ -5,7 +5,7 @@ import PixelatedFX from "./development/pixelatedFX";
 
 let phaserConfig: Phaser.Types.Core.GameConfig = {
     scale: {
-        width: 800,
+        width: 600,
         height: 600,
         autoCenter: Phaser.Scale.CENTER_BOTH
     },
