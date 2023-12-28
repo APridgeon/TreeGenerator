@@ -49,14 +49,17 @@ main canvas {
     border-radius: 30px;
 }
 
-#controls {
+.controls {
     font-size: 15px;
-    width: 70vw;
     margin: 25px; 
     display: flex; 
-    flex-flow: column wrap; 
-    height: 200px;
+    flex-flow: row wrap; 
 }
 
 
-
+.sliders {
+    font-size: 15px;
+    margin: 25px; 
+    display: flex; 
+    flex-flow: column wrap; 
+}

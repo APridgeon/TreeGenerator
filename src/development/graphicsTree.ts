@@ -1,7 +1,7 @@
 import PixelatedFX from "./pixelatedFX";
 import * as Phaser from 'phaser';
 import TreeComponents from "./treeTiles";
-import InputControllers from "./controls";
+import InputControllers, { BranchColours, Effects, LeafColours } from "./controls";
 
 type Position = {
     x: number,
@@ -11,6 +11,7 @@ type Position = {
 export default class GraphicsTree {
 
     _scene: Phaser.Scene;
+
 
     gOb: Phaser.GameObjects.Graphics;
     leafClumps: Phaser.GameObjects.Image[] = [];
@@ -32,44 +33,56 @@ export default class GraphicsTree {
 
 
         this.gOb = scene.add.graphics();
+        this.makeTree();
 
-        this._scene.input.on(Phaser.Input.Events.POINTER_DOWN, () => {
-            this.gOb.clear();
-            if(this.tree){
-                this.tree.clear();
-            }
-    
-            if(!this.controls.randomSeedCheckbox.checked){
-                console.log
-                this.controls.randomSeedInput.value = Math.random().toString();
-            }
-    
-            let treeSettings: TreeSettings = {
-                seed: this.controls.randomSeedInput.value.toString(),
-    
-                life: 0,
-    
-                lineWidth: this.controls.branchWidthInput.valueAsNumber,
-                lineWidthDecrease: this.controls.branchWidthDecreaseInput.valueAsNumber,
-                
-                growthAmount: this.controls.growthLengthInput.valueAsNumber,
-                wobbliness: this.controls.wobbleInput.valueAsNumber,
-                internodeLength: this.controls.internodeLengthInput.valueAsNumber,
-            
-                branchDelay: this.controls.branchDelayInput.valueAsNumber,
-                abilityToBranch: this.controls.branchAbilityInput.valueAsNumber,
-                newBranchesTerminateSooner: 0,
-                branchTermination: this.controls.overallGrowthInput.valueAsNumber,
-            }
-    
-    
-            this.tree = new Tree({x: 300, y: 600}, treeSettings, this.gOb, this._scene);
-
-        })
+        this._scene.input.on(Phaser.Input.Events.POINTER_DOWN, () => this.makeTree());
 
         this.gOb.setPostPipeline(pixel);
         let post = this.gOb.postPipelines[0] as PixelatedFX;
         post.setup(this.scale - 2, {NE: 0.1, SE: 0.1, SW: 0, NW: 0});
+
+    }
+
+    makeTree(){
+        this.gOb.clear();
+        if(this.tree){
+            this.tree.clear();
+        }
+
+        if(!this.controls.randomSeedCheckbox.checked){
+            this.controls.randomSeedInput.value = Math.random().toString();
+        }
+
+        let treeSettings: TreeSettings = {
+            seed: this.controls.randomSeedInput.value.toString(),
+
+            life: 0,
+
+            lineWidth: (this.controls.effectsMap.get(Effects.BranchWidth) as HTMLInputElement).valueAsNumber,
+            lineWidthDecrease: (this.controls.effectsMap.get(Effects.BranchWidthDecrease) as HTMLInputElement).valueAsNumber,
+            
+            growthAmount: (this.controls.effectsMap.get(Effects.GrowthLength) as HTMLInputElement).valueAsNumber,
+            wobbliness: (this.controls.effectsMap.get(Effects.Wobble) as HTMLInputElement).valueAsNumber,
+            internodeLength: (this.controls.effectsMap.get(Effects.SegmentLength) as HTMLInputElement).valueAsNumber,
+        
+            branchDelay: (this.controls.effectsMap.get(Effects.BranchDelay) as HTMLInputElement).valueAsNumber,
+            abilityToBranch: (this.controls.effectsMap.get(Effects.BranchAbility) as HTMLInputElement).valueAsNumber,
+            newBranchesTerminateSooner: 0,
+            branchTermination: (this.controls.effectsMap.get(Effects.Age) as HTMLInputElement).valueAsNumber,
+
+            leafColours: {
+                dark: ((this.controls.effectsMap.get(Effects.LeafColours).children[0] as HTMLInputElement).value),
+                middle: ((this.controls.effectsMap.get(Effects.LeafColours).children[1] as HTMLInputElement).value),
+                light: ((this.controls.effectsMap.get(Effects.LeafColours).children[2] as HTMLInputElement).value)
+            },
+
+            branchColours: {
+                dark: ((this.controls.effectsMap.get(Effects.BranchColours).children[0] as HTMLInputElement).value),
+                light: ((this.controls.effectsMap.get(Effects.BranchColours).children[1] as HTMLInputElement).value)
+            }
+        }
+
+        this.tree = new Tree({x: this._scene.game.scale.width/2, y: this._scene.game.scale.height}, treeSettings, this.gOb, this._scene);
 
     }
 
@@ -111,7 +124,7 @@ export class Tree {
     private generateTree() {
         this.buds.forEach((bud, i) => {
             let choice = Phaser.Math.RND.between(0,1);
-            let branchColours = [0x816976, 0x4a3838];
+            let branchColours = [Number((this.treeSettings.branchColours.light).replace('#', '0x')), Number((this.treeSettings.branchColours.dark).replace('#', '0x'))];
 
             this._graphicsOb.setDefaultStyles({lineStyle: {width: (this.treeSettings.lineWidth * this.scale), color: branchColours[choice]}, fillStyle: {color: branchColours[choice]}});
 
@@ -176,15 +189,15 @@ export class Tree {
 
         this.leafClumps.push( this._scene.add.image(Math.round(bud.pos.x/this.scale) * this.scale, Math.round(bud.pos.y/this.scale) * this.scale, 'trees', TreeComponents.LeafComponents[choice].bottom)
             .setScale(this.scale)
-            .setTint(0x413452) )
+            .setTint(Number((this.treeSettings.leafColours.dark).replace('#', '0x'))));
         
         this.leafClumps.push( this._scene.add.image(Math.round(bud.pos.x/this.scale) * this.scale, Math.round(bud.pos.y/this.scale) * this.scale, 'trees', TreeComponents.LeafComponents[choice].middle)
             .setScale(this.scale)
-            .setTint(0x3b6e7f) )
+            .setTint(Number((this.treeSettings.leafColours.middle).replace('#', '0x'))));
         
         this.leafClumps.push( this._scene.add.image(Math.round(bud.pos.x/this.scale) * this.scale, Math.round(bud.pos.y/this.scale) * this.scale,  'trees', TreeComponents.LeafComponents[choice].top)
             .setScale(this.scale)
-            .setTint(0x66ab8c) )
+            .setTint(Number((this.treeSettings.leafColours.light).replace('#', '0x'))));
     }
 
     public clear(){
@@ -225,5 +238,8 @@ export type TreeSettings = {
     branchDelay: number,
     abilityToBranch: number,
     newBranchesTerminateSooner: number,
-    branchTermination: number
+    branchTermination: number,
+
+    leafColours: LeafColours,
+    branchColours: BranchColours
 }

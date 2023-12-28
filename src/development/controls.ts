@@ -1,154 +1,226 @@
+import * as Phaser from "phaser";
+
+export enum Effects {
+    Wobble = 'Wobble',
+    GrowthLength = 'Growth Length',
+    BranchWidth = 'Branch Width',
+    BranchWidthDecrease = 'Decrease in Branch Width',
+    BranchAbility = 'Ability to Branch',
+    BranchDelay = 'Branch Delay',
+    SegmentLength = 'Length Between Branches',
+    Age = 'Age',
+    LeafColours = 'Leaf Colours',
+    BranchColours = "Branch Colours"
+}
+
+export type LeafColours = {
+    dark: string,
+    middle: string,
+    light: string
+}
+
+export type BranchColours = {
+    dark: string,
+    light: string
+}
+
+
 export default class InputControllers {
 
+    controlParentDiv: HTMLDivElement;
+    colours: HTMLDivElement;
+    sliders: HTMLDivElement;
+    effectsMap: Map<Effects, HTMLElement> = new Map();
 
-    growthLengthInput: HTMLInputElement;
-    wobbleInput: HTMLInputElement;
-    branchWidthInput: HTMLInputElement;
-    branchDelayInput: HTMLInputElement;
-    branchAbilityInput: HTMLInputElement;
-    internodeLengthInput: HTMLInputElement;
-    overallGrowthInput: HTMLInputElement;
-    branchWidthDecreaseInput: HTMLInputElement;
     randomSeedInput: HTMLInputElement;
     randomSeedCheckbox: HTMLInputElement;
 
     constructor(){
+
+        this.controlParentDiv = document.getElementById("controls") as HTMLDivElement;
+        this.colours = document.createElement("div") as HTMLDivElement;
+        this.colours.className = "sliders";
+        this.sliders = document.createElement("div") as HTMLDivElement;
+        this.sliders.className = 'sliders';
+        this.controlParentDiv.appendChild(this.colours);
+        this.controlParentDiv.appendChild(this.sliders);
         this.setupControls();
-
-
     }
-
+ 
     setupControls() {
 
-        let gameDiv = document.getElementById("controls")
+        this.addSlider(Effects.Wobble, 0, 180, 70, 1);
+        this.addSlider(Effects.GrowthLength, 0.00, 3.00, 1.00, 0.01);
+        this.addSlider(Effects.BranchWidth, 3.00, 20.00, 4.00, 0.01);
+        this.addSlider(Effects.BranchWidthDecrease, 0.900, 0.999, 0.98, 0.001);
+        (this.effectsMap.get(Effects.BranchWidthDecrease) as HTMLInputElement).value = '0.980';
+        this.addSlider(Effects.BranchAbility, 0, 20, 2, 1);
+        this.addSlider(Effects.BranchDelay, 0, 150, 60, 1);
+        this.addSlider(Effects.SegmentLength, 3, 50, 5, 1);
+        this.addSlider(Effects.Age, 0, 200, 120, 1);
 
-        let wobbleTitle = document.createElement("b");
-        wobbleTitle.innerText = "wobble";
-        this.wobbleInput = document.createElement("input");
-        this.wobbleInput.type = "range";
-        this.wobbleInput.min = "0";
-        this.wobbleInput.max = "180";
-        this.wobbleInput.value = "70";
+        let defaultLeafColours: LeafColours = {
+            dark: '#413452',
+            middle: '#3b6e7f',
+            light: '#66ab8c'
+        }
 
-        gameDiv.appendChild(wobbleTitle);
-        gameDiv.appendChild(this.wobbleInput);
+        this.addLeafColourChoices(Effects.LeafColours, defaultLeafColours);
 
+        let defaultBranchColours: BranchColours = {
+            dark: '#816976',
+            light: '#4a3838'
+        }
 
-        let growthLengthTitle = document.createElement("b");
-       growthLengthTitle.innerText = "growth length";
-        this.growthLengthInput = document.createElement("input");
-        this.growthLengthInput.type = "range";
-        this.growthLengthInput.min = "0.00";
-        this.growthLengthInput.max = "3.00";
-        this.growthLengthInput.value = "1.00";
-        this.growthLengthInput.step = "0.01";
+        this.addBranchColourChoices(Effects.BranchColours, defaultBranchColours);
 
-        gameDiv.appendChild(growthLengthTitle);
-        gameDiv.appendChild(this.growthLengthInput);
-
-        let branchWidthTitle = document.createElement("b");
-        branchWidthTitle.innerText = "branch width";
-        this.branchWidthInput = document.createElement("input");
-        this.branchWidthInput.type = "range";
-        this.branchWidthInput.min = "3.00";
-        this.branchWidthInput.max = "20.00";
-        this.branchWidthInput.value = "4.00";
-        this.branchWidthInput.step = "0.01";
-
-        gameDiv.appendChild(branchWidthTitle);
-        gameDiv.appendChild(this.branchWidthInput);
-
-
-
-
-        let branchWidthDecreaseTitle = document.createElement("b");
-        branchWidthDecreaseTitle.innerText = "branch width decrease";
-        this.branchWidthDecreaseInput = document.createElement("input");
-        this.branchWidthDecreaseInput.type = "range";
-        this.branchWidthDecreaseInput.min = "0.900";
-        this.branchWidthDecreaseInput.max = "0.999";
-        this.branchWidthDecreaseInput.step = "0.001";
-        this.branchWidthDecreaseInput.value = "0.980";
-
-        gameDiv.appendChild(branchWidthDecreaseTitle);
-        gameDiv.appendChild(this.branchWidthDecreaseInput);
-
-
-        let branchAbilityTitle = document.createElement("b");
-        branchAbilityTitle.innerText = "branch ability";
-        this.branchAbilityInput = document.createElement("input");
-        this.branchAbilityInput.type = "range";
-        this.branchAbilityInput.min = "0";
-        this.branchAbilityInput.max = "20";
-        this.branchAbilityInput.value = "2";
-        this.branchAbilityInput.step = "1";
-
-        gameDiv.appendChild(branchAbilityTitle);
-        gameDiv.appendChild(this.branchAbilityInput);
-
-
-        let branchDelayTitle = document.createElement("b");
-        branchDelayTitle.innerText = "branch delay";
-        this.branchDelayInput = document.createElement("input");
-        this.branchDelayInput.type = "range";
-        this.branchDelayInput.min = "0";
-        this.branchDelayInput.max = "150";
-        this.branchDelayInput.value = "60";
-        this.branchDelayInput.step = "1";
-
-        gameDiv.appendChild(branchDelayTitle);
-        gameDiv.appendChild(this.branchDelayInput);
-
-
-
-        let internodeLengthTitle = document.createElement("b");
-        internodeLengthTitle.innerText = "internode length";
-        this.internodeLengthInput = document.createElement("input");
-        this.internodeLengthInput.type = "range";
-        this.internodeLengthInput.min = "3";
-        this.internodeLengthInput.max = "50";
-        this.internodeLengthInput.value = "5";
-        this.internodeLengthInput.step = "1";
-
-        gameDiv.appendChild(internodeLengthTitle);
-        gameDiv.appendChild(this.internodeLengthInput);
-
-
-        let overallGrowthTitle = document.createElement("b");
-        overallGrowthTitle.innerText = "overall growth";
-        this.overallGrowthInput = document.createElement("input");
-        this.overallGrowthInput.type = "range";
-        this.overallGrowthInput.min = "0";
-        this.overallGrowthInput.max = "150";
-        this.overallGrowthInput.value = "100";
-        this.overallGrowthInput.step = "1";
-
-        gameDiv.appendChild(overallGrowthTitle);
-        gameDiv.appendChild(this.overallGrowthInput);
-
+        let parentCheckbox = document.createElement('div');
+        parentCheckbox.style.display = "flex";
+        parentCheckbox.style.flexFlow = "column nowrap";
 
         let seedCheckboxTitle = document.createElement("b");
-        seedCheckboxTitle.innerText = "set seed for randomness";
+        seedCheckboxTitle.innerText = "Set Seed for Randomness";
         this.randomSeedCheckbox = document.createElement("input");
         this.randomSeedCheckbox.type = "checkbox";
         this.randomSeedCheckbox.checked = false;
 
+        parentCheckbox.appendChild(seedCheckboxTitle);
+        parentCheckbox.appendChild(this.randomSeedCheckbox);
 
-        gameDiv.appendChild(seedCheckboxTitle);
-        gameDiv.appendChild(this.randomSeedCheckbox);
+
+        let parentSlider = document.createElement('div');
+        parentSlider.style.display = "flex";
+        parentSlider.style.flexFlow = "column nowrap";
 
         let randomSeedTitle = document.createElement("b");
-        randomSeedTitle.innerText = "seed for randomness";
+        randomSeedTitle.innerText = "Seed for Randomness";
         this.randomSeedInput = document.createElement("input");
         this.randomSeedInput.type = "range";
         this.randomSeedInput.min = "0.01";
         this.randomSeedInput.max = "1";
         this.randomSeedInput.value = "0.5";
         this.randomSeedInput.step = "0.01";
+        this.randomSeedInput.style.margin = '30px';
+        this.randomSeedInput.style.marginBottom = '5px';
+        this.randomSeedInput.style.marginTop = '0px';
 
-        gameDiv.appendChild(randomSeedTitle);
-        gameDiv.appendChild(this.randomSeedInput);
+        parentSlider.appendChild(randomSeedTitle);
+        parentSlider.appendChild(this.randomSeedInput);
 
+        let parent = document.createElement('div');
+        parent.appendChild(parentCheckbox);
+        parent.appendChild(parentSlider);
+        parent.style.margin = '25px'
+
+        this.controlParentDiv.appendChild(parent);
 
     }
+
+    addSlider(effect: Effects, min: number, max: number, auto: number, step: number){
+
+        let parent = document.createElement("div");
+        parent.style.display = "flex";
+        parent.style.flexFlow = "column nowrap";
+
+        let titleElement = document.createElement("b");
+        titleElement.innerText = effect.toString();
+
+        let inputElement = document.createElement("input");
+        inputElement.type = "range";
+        inputElement.min = min.toString();
+        inputElement.max = max.toString();
+        inputElement.value = auto.toString();
+        inputElement.step = step.toString();
+
+        inputElement.style.margin = '30px';
+        inputElement.style.marginBottom = '5px';
+        inputElement.style.marginTop = '0px';
+
+
+        parent.appendChild(titleElement);
+        parent.appendChild(inputElement);
+        parent.style.margin = '5px'
+
+        this.sliders.appendChild(parent);
+
+        this.effectsMap.set(effect, inputElement);
+    }
+
+    addLeafColourChoices(effect: Effects, colourDefault: LeafColours){
+        let parent = document.createElement("div");
+        parent.style.display = "flex";
+        parent.style.flexFlow = "column nowrap";
+
+        let colourParent = document.createElement("div");
+        colourParent.style.display = "flex";
+        colourParent.style.flexFlow = "row nowrap";
+        colourParent.style.margin = '5px';
+
+        let titleElement = document.createElement("b");
+        titleElement.innerText = effect.toString();
+
+        let darkColorChoice = document.createElement("input");
+        darkColorChoice.type = "color";
+        darkColorChoice.value = colourDefault.dark; 
+        darkColorChoice.id = "dark"
+
+        let middleColorChoice = document.createElement("input");
+        middleColorChoice.type = "color";
+        middleColorChoice.value = colourDefault.middle; 
+        middleColorChoice.id = "middle"
+
+        let lightColorChoice = document.createElement("input");
+        lightColorChoice.type = "color";
+        lightColorChoice.value = colourDefault.light; 
+        lightColorChoice.id = "light"
+
+        colourParent.appendChild(darkColorChoice);
+        colourParent.appendChild(middleColorChoice);
+        colourParent.appendChild(lightColorChoice);
+
+        parent.appendChild(titleElement);
+        parent.appendChild(colourParent);
+        parent.style.margin = '5px'
+
+        this.colours.appendChild(parent);
+
+        this.effectsMap.set(effect, colourParent);
+    }
+
+    addBranchColourChoices(effect: Effects, colourDefault: BranchColours){
+        let parent = document.createElement("div");
+        parent.style.display = "flex";
+        parent.style.flexFlow = "column nowrap";
+
+        let colourParent = document.createElement("div");
+        colourParent.style.display = "flex";
+        colourParent.style.flexFlow = "row nowrap";
+        colourParent.style.margin = '5px';
+
+        let titleElement = document.createElement("b");
+        titleElement.innerText = effect.toString();
+
+        let darkColorChoice = document.createElement("input");
+        darkColorChoice.type = "color";
+        darkColorChoice.value = colourDefault.dark; 
+        darkColorChoice.id = "dark"
+
+        let lightColorChoice = document.createElement("input");
+        lightColorChoice.type = "color";
+        lightColorChoice.value = colourDefault.light; 
+        lightColorChoice.id = "light"
+
+        colourParent.appendChild(darkColorChoice);
+        colourParent.appendChild(lightColorChoice);
+
+        parent.appendChild(titleElement);
+        parent.appendChild(colourParent);
+        parent.style.margin = '5px'
+
+        this.colours.appendChild(parent);
+
+        this.effectsMap.set(effect, colourParent);
+    }
+
+
 }

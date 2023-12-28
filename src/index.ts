@@ -5,12 +5,12 @@ import PixelatedFX from "./development/pixelatedFX";
 
 let phaserConfig: Phaser.Types.Core.GameConfig = {
     scale: {
-        width: 600,
-        height: 600,
+        width: 500,
+        height: 500,
         autoCenter: Phaser.Scale.CENTER_BOTH
     },
     parent: "game",
-    backgroundColor: "#ffaaaa",
+    backgroundColor: "#ffffff",
     scene: [DevScene],
     pixelArt: true,
     // @ts-ignore
