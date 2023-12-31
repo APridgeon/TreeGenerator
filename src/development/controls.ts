@@ -10,7 +10,8 @@ export enum Effects {
     SegmentLength = 'Length Between Branches',
     Age = 'Age',
     LeafColours = 'Leaf Colours',
-    BranchColours = "Branch Colours"
+    BranchColours = "Branch Colours",
+    GrowthSpeed = 'Growth Speed'
 }
 
 export type LeafColours = {
@@ -27,6 +28,8 @@ export type BranchColours = {
 
 export default class InputControllers {
 
+    _scene: Phaser.Scene;
+
     controlParentDiv: HTMLDivElement;
     colours: HTMLDivElement;
     sliders: HTMLDivElement;
@@ -35,7 +38,8 @@ export default class InputControllers {
     randomSeedInput: HTMLInputElement;
     randomSeedCheckbox: HTMLInputElement;
 
-    constructor(){
+    constructor(scene: Phaser.Scene){
+        this._scene = scene;
 
         this.controlParentDiv = document.getElementById("controls") as HTMLDivElement;
         this.colours = document.createElement("div") as HTMLDivElement;
@@ -58,6 +62,7 @@ export default class InputControllers {
         this.addSlider(Effects.BranchDelay, 0, 150, 60, 1);
         this.addSlider(Effects.SegmentLength, 3, 50, 5, 1);
         this.addSlider(Effects.Age, 0, 200, 120, 1);
+        this.addSlider(Effects.GrowthSpeed, 1, 100, 10, 1);
 
         let defaultLeafColours: LeafColours = {
             dark: '#413452',
@@ -73,6 +78,7 @@ export default class InputControllers {
         }
 
         this.addBranchColourChoices(Effects.BranchColours, defaultBranchColours);
+        this.addBackgroundColourChoices('#ffdddd')
 
         let parentCheckbox = document.createElement('div');
         parentCheckbox.style.display = "flex";
@@ -220,6 +226,37 @@ export default class InputControllers {
         this.colours.appendChild(parent);
 
         this.effectsMap.set(effect, colourParent);
+    }
+
+    addBackgroundColourChoices(colour: string){
+        let parent = document.createElement("div");
+        parent.style.display = "flex";
+        parent.style.flexFlow = "column nowrap";
+
+        let colourParent = document.createElement("div");
+        colourParent.style.display = "flex";
+        colourParent.style.flexFlow = "row nowrap";
+        colourParent.style.margin = '5px';
+
+        let titleElement = document.createElement("b");
+        titleElement.innerText = 'Background Colour'
+
+        let backgroundColorChoice = document.createElement("input");
+        backgroundColorChoice.type = "color";
+        backgroundColorChoice.value = colour; 
+        backgroundColorChoice.id = "dark"
+
+        colourParent.appendChild(backgroundColorChoice);
+
+        parent.appendChild(titleElement);
+        parent.appendChild(colourParent);
+        parent.style.margin = '5px'
+
+        this.colours.appendChild(parent);
+
+        backgroundColorChoice.addEventListener('change', () => {
+            this._scene.cameras.main.setBackgroundColor(backgroundColorChoice.value);
+        })
     }
 
 

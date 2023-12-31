@@ -24,11 +24,11 @@ export default class GraphicsTree {
 
 
     constructor(scene: Phaser.Scene){
-
-        this.controls = new InputControllers();
-
-
+        
         this._scene = scene;
+        this.controls = new InputControllers(this._scene);
+
+
         let pixel = (this._scene.renderer as Phaser.Renderer.WebGL.WebGLRenderer).pipelines.getPostPipeline('PixelatedFX') as PixelatedFX;
 
 
@@ -70,6 +70,8 @@ export default class GraphicsTree {
             newBranchesTerminateSooner: 0,
             branchTermination: (this.controls.effectsMap.get(Effects.Age) as HTMLInputElement).valueAsNumber,
 
+            growthSpeed: (this.controls.effectsMap.get(Effects.GrowthSpeed) as HTMLInputElement).valueAsNumber,
+
             leafColours: {
                 dark: ((this.controls.effectsMap.get(Effects.LeafColours).children[0] as HTMLInputElement).value),
                 middle: ((this.controls.effectsMap.get(Effects.LeafColours).children[1] as HTMLInputElement).value),
@@ -82,7 +84,7 @@ export default class GraphicsTree {
             }
         }
 
-        this.tree = new Tree({x: this._scene.game.scale.width/2, y: this._scene.game.scale.height}, treeSettings, this.gOb, this._scene);
+        this.tree = new Tree({x: this._scene.game.scale.width/2, y: this._scene.game.scale.height}, treeSettings, this);
 
     }
 
@@ -100,24 +102,33 @@ export class Tree {
     private scale = 4;
     public treeSettings: TreeSettings;
 
+    private timedGrowEvent: Phaser.Time.TimerEvent;
+
+
     private buds: GrowthBud[] = [];
+    public budSkeleton: GrowthBud[] = [];
 
 
-    constructor(pos: Position, treeSettings: TreeSettings, graphicsOb: Phaser.GameObjects.Graphics, scene: Phaser.Scene){
+    constructor(pos: Position, treeSettings: TreeSettings, graphicsTree: GraphicsTree){
 
-        this._graphicsOb = graphicsOb;
-        this._scene = scene;
+        this._graphicsOb = graphicsTree.gOb;
+        this._scene = graphicsTree._scene;
 
         this.pos = pos;
         this.treeSettings = treeSettings;
 
-        this.buds.push(new GrowthBud(this.pos, 0, 0, 1));
+        this.buds.push(new GrowthBud(this.pos, 0, 0, 1, this));
 
 
         Phaser.Math.RND.sow([`${this.treeSettings.seed}`]);
-        for(let i = 0; i < this.treeSettings.branchTermination; i ++){
-            this.generateTree();
-        }
+
+
+        this.timedGrowEvent = this._scene.time.addEvent({
+            repeat: this.treeSettings.branchTermination,
+            delay: this.treeSettings.growthSpeed,
+            callback: () => this.generateTree(),
+
+        })
 
     }
 
@@ -161,7 +172,7 @@ export class Tree {
 
                 let newAngle = Phaser.Math.RND.between(0, 90) * Phaser.Math.RND.sign();
                 let newGrowthLength = 1 * bud.growthLength;
-                this.buds.push(new GrowthBud(bud.pos, newAngle, bud.life + this.treeSettings.newBranchesTerminateSooner, newGrowthLength));
+                this.buds.push(new GrowthBud(bud.pos, newAngle, bud.life + this.treeSettings.newBranchesTerminateSooner, newGrowthLength, this));
                 // this.drawLeafClump(bud);
             }
 
@@ -179,7 +190,8 @@ export class Tree {
                 if(this.treeSettings.lineWidth < 1) this.treeSettings.lineWidth = 1;
             }
 
-
+            let budClone = JSON.parse(JSON.stringify(bud));
+            this.budSkeleton.push(budClone);
         })
 
     }
@@ -201,7 +213,9 @@ export class Tree {
     }
 
     public clear(){
+
         this.leafClumps.forEach(clump => clump.destroy());
+        this.timedGrowEvent.destroy();
     }
 
     public growOne(){
@@ -217,12 +231,14 @@ export class GrowthBud {
     angle: number;
     life: number;
     growthLength: number;
+    tree: Tree
 
-    constructor(pos: Position, angle: number, life: number, growthLength: number){
+    constructor(pos: Position, angle: number, life: number, growthLength: number, tree: Tree){
         this.pos = pos;
         this.angle = angle;
         this.life = life;
         this.growthLength = growthLength;
+        this.tree
     }
 
 }
@@ -239,6 +255,7 @@ export type TreeSettings = {
     abilityToBranch: number,
     newBranchesTerminateSooner: number,
     branchTermination: number,
+    growthSpeed: number
 
     leafColours: LeafColours,
     branchColours: BranchColours

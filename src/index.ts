@@ -10,7 +10,7 @@ let phaserConfig: Phaser.Types.Core.GameConfig = {
         autoCenter: Phaser.Scale.CENTER_BOTH
     },
     parent: "game",
-    backgroundColor: "#ffffff",
+    backgroundColor: "#ffdddd",
     scene: [DevScene],
     pixelArt: true,
     // @ts-ignore
